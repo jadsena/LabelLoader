@@ -5,4 +5,8 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GeekBurger.LabelLoader.Contract\GeekBurger.LabelLoader.Contract.csproj" />
+  </ItemGroup>
+
 </Project>

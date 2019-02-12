@@ -6,6 +6,8 @@ namespace GeekBurger.LabelLoader
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("LabelLoader 1.0.0");
+
             Console.WriteLine("Hello World!");
         }
     }
