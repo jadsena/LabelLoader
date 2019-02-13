@@ -4,8 +4,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
@@ -21,12 +23,17 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
         /// <param name="imageBase64"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task ExtractIngredients(string item, string imageBase64)
+        public async Task<ReturnIngredients> ExtractIngredients(string item, string imageBase64)
         {
+            ReturnIngredients returnIngredients = new ReturnIngredients();
+
             try
-            {
-                var subscriptionKey = "a51bae8b73d54fc8a7c32361b173241f";
-                var uriBase = "https://brazilsouth.api.cognitive.microsoft.com/vision/v2.0/analyze";
+            {                
+                string extractedResult = "";
+                ImageInfoViewModel responeData = new ImageInfoViewModel();
+                var subscriptionKey = "c7ca131650e84ef0a64a903a54867f5c";
+                /// vision / v2.0 / analyze
+                var uriBase = "https://centralus.api.cognitive.microsoft.com/vision/v2.0/ocr";
                 HttpClient client = new HttpClient();
                 HttpResponseMessage response;
 
@@ -34,7 +41,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
                 client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
 
                 // Request parameters               
-                string requestParameters = "visualFeatures=Categories,Description,Color";
+                string requestParameters = "language=pt&detectOrientation=true";
 
                 // Assemble the URI for the REST API method.
                 string uri = uriBase + "?" + requestParameters;
@@ -53,13 +60,43 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
                 // Asynchronously get the JSON response.
                 string contentString = await response.Content.ReadAsStringAsync();
 
-                // Display the JSON response.
-                var result = JToken.Parse(contentString).ToString();
+                if (response.IsSuccessStatusCode)
+                {
+                    // The JSON response mapped into respective view model.  
+                    responeData = JsonConvert.DeserializeObject<ImageInfoViewModel>(contentString,
+                        new JsonSerializerSettings
+                        {
+                            NullValueHandling = NullValueHandling.Include,
+                            Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs earg)
+                            {
+                                returnIngredients.Erros.Add(earg.ErrorContext.Member.ToString());
+                                earg.ErrorContext.Handled = true;
+                            }
+                        }
+                    );
+
+                    var linesCount = responeData.regions[0].lines.Count;
+                    for (int i = 0; i < linesCount; i++)
+                    {
+                        var wordsCount = responeData.regions[0].lines[i].words.Count;
+                        for (int j = 0; j < wordsCount; j++)
+                        {
+                            //Appending all the lines content into one.  
+                            if (responeData.regions[0].lines[i].words[j].text.ToUpper() != "INGREDIENTES")
+                                extractedResult += responeData.regions[0].lines[i].words[j].text + " ";
+                        }     
+                    }
+                }
+
+                returnIngredients.Item = item;
+                returnIngredients.Ingredients = extractedResult.Split(",").ToList();
+
+                return returnIngredients;
             }
             catch (Exception e)
             {
-                Console.WriteLine("\n" + e.Message);
-            }
+                return returnIngredients;
+            }           
         }
     }
 }
