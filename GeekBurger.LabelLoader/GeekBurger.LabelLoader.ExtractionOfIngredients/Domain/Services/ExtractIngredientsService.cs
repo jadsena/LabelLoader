@@ -1,5 +1,6 @@
 ﻿using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,14 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
 {
     public class ExtractIngredientsService : IExtractIngredientsService
     {
+        readonly private IConfiguration _configuration;
+
+        public ExtractIngredientsService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+
         public async Task<List<string>> GetIngredients(string imageBase64)
         {
             try
@@ -20,15 +29,11 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
                 HttpClient client = new HttpClient();
                 HttpResponseMessage response;
 
-                string result = "";
-                string subscriptionKey = "c7ca131650e84ef0a64a903a54867f5c";
-                string uriBase = "https://centralus.api.cognitive.microsoft.com/vision/v2.0/ocr";
-                string requestParameters = "language=pt&detectOrientation=true";
-
+                string result = "";     
                 byte[] image = Convert.FromBase64String(imageBase64);
 
                 // Request headers.
-                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", subscriptionKey);
+                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _configuration.GetSection("Cognitive:SubscriptionKey").Value);
 
                 // Add the byte array as an octet stream to the request body.
                 using (ByteArrayContent content = new ByteArrayContent(image))
@@ -37,7 +42,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
                     content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
                     // Asynchronously call the REST API method.
-                    response = await client.PostAsync($"{uriBase}?{requestParameters}", content);
+                    response = await client.PostAsync($"{_configuration.GetSection("Cognitive:UriBase").Value}?{_configuration.GetSection("Cognitive:UriParameters").Value}", content);
                 }
 
                 // Asynchronously get the JSON response.
