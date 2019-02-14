@@ -11,10 +11,12 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
     public class IngredientController : ControllerBase
     {
         private readonly IExtractIngredientsService _extractIngredients;
+        private readonly ISendIngredientsService _sendIngredients;
 
-        public IngredientController(IExtractIngredientsService extractIngredients)
+        public IngredientController(IExtractIngredientsService extractIngredients, ISendIngredientsService sendIngredients)
         {
             _extractIngredients = extractIngredients;
+            _sendIngredients = sendIngredients;
         }
 
         /// <summary>
@@ -33,12 +35,13 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
                     Ingredients = await _extractIngredients.GetIngredients(imageBase64)            
                 };
 
-                return returnIngredients;
+                _sendIngredients.SendIngredients(returnIngredients);
 
+                return returnIngredients;
             }
             catch (Exception e)
             {
-                return new ReturnIngredients() { Error = "Ocorreu erro ao extrair os ingredientes!"};
+                return new ReturnIngredients() { Error = e.Message};
             }           
         }
     }

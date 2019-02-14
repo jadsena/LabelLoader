@@ -30,6 +30,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IExtractIngredientsService, ExtractIngredientsService>();
+            services.AddScoped<ISendIngredientsService, SendIngredientsService>();
 
             services.AddSwaggerGen(c =>
              {
