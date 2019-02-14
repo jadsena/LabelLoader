@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
+using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -27,10 +29,13 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<IExtractIngredientsService, ExtractIngredientsService>();
+
             services.AddSwaggerGen(c =>
              {
                  c.SwaggerDoc("v1", new Info { Title = "Label Loader", Version = "v1" });
              });
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 

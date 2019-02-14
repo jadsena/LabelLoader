@@ -29,18 +29,5 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models
         public string orientation { get; set; }
         public int textAngle { get; set; }
         public List<Region> regions { get; set; }
-    }
-
-    public class ReturnIngredients
-    {
-        public ReturnIngredients()
-        {
-            Ingredients = new List<string>();
-            Erros = new List<string>();
-        }
-
-        public string Item { get; set; }
-        public List<string> Ingredients { get; set; }
-        public List<string> Erros { get; set; }
-    }
+    }   
 }
