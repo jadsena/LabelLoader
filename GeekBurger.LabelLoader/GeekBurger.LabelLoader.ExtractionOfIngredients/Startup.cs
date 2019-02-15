@@ -55,7 +55,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ContactsBox V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Label Loader V1");
             });
 
             var option = new RewriteOptions();

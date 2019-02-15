@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeekBurger.LabelLoader.Cont
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeekBurger.LabelLoader.AddImage", "GeekBurger.LabelLoader.AddImage\GeekBurger.LabelLoader.AddImage.csproj", "{EBE412ED-2F2E-4C9F-92D0-BCA3CBBD143E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeekBurger.LabelLoader.ExtractionOfIngredients", "GeekBurger.LabelLoader.ExtractionOfIngredients\GeekBurger.LabelLoader.ExtractionOfIngredients.csproj", "{1993E27E-9FD7-4D23-B728-EF3BB191B64B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeekBurger.LabelLoader.ExtractionOfIngredients", "GeekBurger.LabelLoader.ExtractionOfIngredients\GeekBurger.LabelLoader.ExtractionOfIngredients.csproj", "{1993E27E-9FD7-4D23-B728-EF3BB191B64B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeekBurger.LabelLoader.ExtractionOfIngredients.Tests", "GeekBurger.LabelLoader.ExtractionOfIngredients.Tests\GeekBurger.LabelLoader.ExtractionOfIngredients.Tests.csproj", "{2E955E08-855A-40C8-A25E-6CA66C7D4824}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{1993E27E-9FD7-4D23-B728-EF3BB191B64B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1993E27E-9FD7-4D23-B728-EF3BB191B64B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1993E27E-9FD7-4D23-B728-EF3BB191B64B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E955E08-855A-40C8-A25E-6CA66C7D4824}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E955E08-855A-40C8-A25E-6CA66C7D4824}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E955E08-855A-40C8-A25E-6CA66C7D4824}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E955E08-855A-40C8-A25E-6CA66C7D4824}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
