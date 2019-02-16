@@ -27,7 +27,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
         /// <param name="imageBase64"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<LabelImageAdded> GetIngredients(AddLabelImage addLabelImage)
+        public async Task<LabelImageAdded> LabelLoaderIngredients(AddLabelImage addLabelImage)
         {
             try
             {
