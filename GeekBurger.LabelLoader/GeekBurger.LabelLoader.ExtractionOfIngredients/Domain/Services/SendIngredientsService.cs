@@ -1,4 +1,5 @@
 ﻿using GeekBurger.LabelLoader.Contract;
+using GeekBurger.LabelLoader.ExtractionOfIngredients.Base;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
 using Microsoft.Azure.Management.ServiceBus.Fluent;
@@ -23,7 +24,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
         public SendIngredientsService(IConfiguration configuration)
         {
             _configuration = configuration;
-            //_serviceBusNamespace = _configuration.GetServiceBusNamespace(); 
+            _serviceBusNamespace = _configuration.GetServiceBusNamespace(); 
             _queuename = _configuration.GetSection("serviceBus:queueName").Value;
             _connectionString = _configuration.GetSection("serviceBus:connectionString").Value;
         }
