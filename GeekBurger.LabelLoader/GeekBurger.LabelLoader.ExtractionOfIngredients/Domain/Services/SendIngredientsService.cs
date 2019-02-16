@@ -48,11 +48,14 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
             var queueClient = new QueueClient(_connectionString, _queuename);
             var message = new Message(Encoding.UTF8.GetBytes(messageBody));
             await queueClient.SendAsync(message);
+            
         }
 
         private void CreateQueueIfNotExists()
-        {          
-            if (!_serviceBusNamespace.Queues.List().Any(x => x.Name.Equals(_queuename)))
+        {
+
+            if (!_serviceBusNamespace.Queues.List().Any(x => x.Name.Equals(_queuename)) &&
+                !_serviceBusNamespace.Topics.List().Any(x => x.Name.Equals(_queuename)))
                 _serviceBusNamespace.Queues.Define(_queuename).WithSizeInMB(1024).Create();
         }       
     }
