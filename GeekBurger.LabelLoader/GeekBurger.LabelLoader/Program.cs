@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
-
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Permissions;
+
 
 namespace GeekBurger.LabelLoader
 {
@@ -13,6 +14,7 @@ namespace GeekBurger.LabelLoader
         private List<string> Extensoes { get; }
         private FileSystemWatcher Watcher { get; set; }
         private IConfiguration Config { get; }
+        private ILoggerFactory LoggerFactory { get; set; }
         static void Main(string[] args)
         {
             Console.WriteLine("LabelLoader 1.0.0");
@@ -27,10 +29,17 @@ namespace GeekBurger.LabelLoader
             Config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
+
+            LoggerFactory = new LoggerFactory()
+                .AddConsole()
+                .AddDebug()
+                .AddFile(@"c:\temp\Log\Log-{Date}.log");
+            ILogger logger = LoggerFactory.CreateLogger<Program>();
+
             DirectoryName = Config.GetSection("LabelImagens:Diretorio").Value;
             Extensoes = Config.GetSection("LabelImagens:Extensoes").Get<List<string>>();
-            Console.WriteLine($"Diretório para imagens: {DirectoryName}");
-            Console.WriteLine($"Extensoes das imagens:  {string.Join(",",Extensoes)}");
+            logger.LogInformation($"Diretório para imagens: {DirectoryName}");
+            logger.LogInformation($"Extensoes das imagens:  {string.Join(",",Extensoes)}");
             if (!Directory.Exists(DirectoryName)) Directory.CreateDirectory(DirectoryName);
         }
 
@@ -65,7 +74,8 @@ namespace GeekBurger.LabelLoader
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
             if (!Extensoes.Contains(Path.GetExtension(e.Name).ToLower().Replace(".",""))) return;
-            Console.WriteLine($"Arquivo: {e.Name}, FullPath: {e.FullPath}, ChangeType: {e.ChangeType}");
+            ILogger<Program> logger = LoggerFactory.CreateLogger<Program>();
+            logger.LogInformation($"Arquivo: {e.Name}, FullPath: {e.FullPath}, ChangeType: {e.ChangeType}");
         }
     }
 }
