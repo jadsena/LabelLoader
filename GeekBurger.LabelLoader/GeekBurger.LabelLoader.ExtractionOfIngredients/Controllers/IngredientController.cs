@@ -20,14 +20,13 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
             _sendIngredientsService = sendIngredients;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="item"></param>
-        /// <param name="imageBase64"></param>
-        /// <returns></returns>
+       /// <summary>
+       /// Extrai os ingredientes
+       /// </summary>
+       /// <param name="addLabelImage"></param>
+       /// <returns></returns>
         [HttpPost]
-        public async Task<LabelImageAdded> LabelLoaderIngredients(AddLabelImage addLabelImage)
+        public async Task<IActionResult> LabelLoaderIngredients(AddLabelImage addLabelImage)
         {
             try
             {
@@ -38,11 +37,11 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
 
                 _sendIngredientsService.SendIngredients(labelImageAdded);
 
-                return labelImageAdded;
+                return Ok();
             }
             catch (Exception)
             {
-                return new LabelImageAdded();
+                return NotFound();
             }           
         }
     }
