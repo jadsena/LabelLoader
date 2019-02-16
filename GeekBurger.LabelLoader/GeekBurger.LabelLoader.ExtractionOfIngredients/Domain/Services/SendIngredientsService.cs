@@ -1,6 +1,7 @@
 ﻿using GeekBurger.LabelLoader.Contract;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
+using Microsoft.Azure.Management.ServiceBus.Fluent;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -14,6 +15,15 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
 {
     public class SendIngredientsService : ISendIngredientsService
     {
+        private readonly IConfigurationRoot _configuration;
+        private readonly string _queuename;
+        private readonly string _connectionString;
+        public SendIngredientsService()
+        {
+            _configuration = GetConfigurationRoot();
+            _queuename = _configuration.GetConnectionString("serviceBus:queueName"); ;
+            _connectionString = _configuration.GetConnectionString("serviceBus:connectionString");
+        }
         public void SendIngredients(LabelImageAdded labelImageAdded)
         {
             try
@@ -29,14 +39,17 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
 
         private async Task SendMessagesAsync(string messageBody)
         {
-
-            var _config = GetConfigurationRoot();
-            string serviceBusConnectionString = _config.GetConnectionString("serviceBus:connectionString");
-            string qeueName = _config.GetConnectionString("serviceBus:subscriptionId");
-            var queueClient = new QueueClient(serviceBusConnectionString, qeueName);
+            CreateQueueIfNotExists();
+            var queueClient = new QueueClient(_connectionString, _queuename);
             var message = new Message(Encoding.UTF8.GetBytes(messageBody));
             await queueClient.SendAsync(message);
+        }
 
+        private void CreateQueueIfNotExists()
+        {
+            var _namespace = _configuration.Get<IServiceBusNamespace>();
+            if (!_namespace.Queues.List().Any(x => x.Name.Equals(_queuename)))
+                _namespace.Queues.Define(_queuename).WithSizeInMB(1024).Create();
         }
 
         private IConfigurationRoot GetConfigurationRoot()
