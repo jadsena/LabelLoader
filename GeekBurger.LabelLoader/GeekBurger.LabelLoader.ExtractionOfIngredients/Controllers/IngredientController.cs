@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using GeekBurger.LabelLoader.Contract;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -10,13 +11,13 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
     [ApiController]
     public class IngredientController : ControllerBase
     {
-        private readonly IExtractIngredientsService _extractIngredients;
-        private readonly ISendIngredientsService _sendIngredients;
+        private readonly IExtractIngredientsService _extractIngredientsService;
+        private readonly ISendIngredientsService _sendIngredientsService;
 
         public IngredientController(IExtractIngredientsService extractIngredients, ISendIngredientsService sendIngredients)
         {
-            _extractIngredients = extractIngredients;
-            _sendIngredients = sendIngredients;
+            _extractIngredientsService = extractIngredients;
+            _sendIngredientsService = sendIngredients;
         }
 
         /// <summary>
@@ -26,22 +27,22 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
         /// <param name="imageBase64"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ReturnIngredients> GetIngredients(string item, string imageBase64)
+        public async Task<LabelImageAdded> GetIngredients(string item, string imageBase64)
         {
             try
             {
-                ReturnIngredients returnIngredients = new ReturnIngredients(){
-                    Item = item,
-                    Ingredients = await _extractIngredients.GetIngredients(imageBase64)            
+                LabelImageAdded labelImageAdded = new LabelImageAdded(){
+                    ItemName = item,
+                    Ingredients = await _extractIngredientsService.GetIngredients(imageBase64)            
                 };
 
-                _sendIngredients.SendIngredients(returnIngredients);
+                _sendIngredientsService.SendIngredients(labelImageAdded);
 
-                return returnIngredients;
+                return labelImageAdded;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                return new ReturnIngredients() { Error = e.Message};
+                return new LabelImageAdded();
             }           
         }
     }
