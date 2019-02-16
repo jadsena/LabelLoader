@@ -1,9 +1,9 @@
-﻿using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
+﻿using GeekBurger.LabelLoader.Contract;
 
 namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces
 {
     public interface ISendIngredientsService
     {
-        void SendIngredients(ReturnIngredients ingredients);
+        void SendIngredients(LabelImageAdded labelImageAdded);
     }
 }
