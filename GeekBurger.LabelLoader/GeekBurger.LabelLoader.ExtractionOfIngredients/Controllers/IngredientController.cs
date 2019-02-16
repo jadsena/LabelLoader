@@ -26,14 +26,14 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
         /// <param name="item"></param>
         /// <param name="imageBase64"></param>
         /// <returns></returns>
-        [HttpGet]
-        public async Task<LabelImageAdded> GetIngredients(string item, string imageBase64)
+        [HttpPost]
+        public async Task<LabelImageAdded> LabelLoaderIngredients(AddLabelImage addLabelImage)
         {
             try
             {
                 LabelImageAdded labelImageAdded = new LabelImageAdded(){
-                    ItemName = item,
-                    Ingredients = await _extractIngredientsService.GetIngredients(imageBase64)            
+                    ItemName = addLabelImage.ItemName,
+                    Ingredients = await _extractIngredientsService.GetIngredients(addLabelImage.File)            
                 };
 
                 _sendIngredientsService.SendIngredients(labelImageAdded);
