@@ -1,4 +1,5 @@
 ﻿using GeekBurger.LabelLoader.Contract;
+using GeekBurger.LabelLoader.ExtractionOfIngredients.Base;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
 using Microsoft.Azure.Management.ServiceBus.Fluent;
@@ -15,15 +16,19 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
 {
     public class SendIngredientsService : ISendIngredientsService
     {
-        private readonly IConfigurationRoot _configuration;
+        private readonly IConfiguration _configuration;
+        private readonly IServiceBusNamespace _serviceBusNamespace;
         private readonly string _queuename;
         private readonly string _connectionString;
-        public SendIngredientsService()
+
+        public SendIngredientsService(IConfiguration configuration)
         {
-            _configuration = GetConfigurationRoot();
-            _queuename = _configuration.GetConnectionString("serviceBus:queueName"); ;
-            _connectionString = _configuration.GetConnectionString("serviceBus:connectionString");
+            _configuration = configuration;
+            _serviceBusNamespace = _configuration.GetServiceBusNamespace(); 
+            _queuename = _configuration.GetSection("serviceBus:queueName").Value;
+            _connectionString = _configuration.GetSection("serviceBus:connectionString").Value;
         }
+
         public void SendIngredients(LabelImageAdded labelImageAdded)
         {
             try
@@ -31,7 +36,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
                 string messageBody = JsonConvert.SerializeObject(labelImageAdded);
                 SendMessagesAsync(messageBody).Wait();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw new Exception("Falha ao enviar ingredientes!");
             }
@@ -46,19 +51,9 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
         }
 
         private void CreateQueueIfNotExists()
-        {
-            var _namespace = _configuration.Get<IServiceBusNamespace>();
-            if (!_namespace.Queues.List().Any(x => x.Name.Equals(_queuename)))
-                _namespace.Queues.Define(_queuename).WithSizeInMB(1024).Create();
-        }
-
-        private IConfigurationRoot GetConfigurationRoot()
-        {
-            var builder = new ConfigurationBuilder()
-               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-               .AddEnvironmentVariables();
-            return builder.Build();
-
-        }
+        {          
+            if (!_serviceBusNamespace.Queues.List().Any(x => x.Name.Equals(_queuename)))
+                _serviceBusNamespace.Queues.Define(_queuename).WithSizeInMB(1024).Create();
+        }       
     }
 }
