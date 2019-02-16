@@ -7,5 +7,6 @@ namespace GeekBurger.LabelLoader.Services
     public interface ILerDiretorio
     {
         void Run();
+        void ProcessarArquivosParados();
     }
 }

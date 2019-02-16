@@ -1,7 +1,10 @@
 ﻿using GeekBurger.LabelLoader.Contract;
+using GeekBurger.LabelLoader.Options;
+using GeekBurger.LabelLoader.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,18 +17,14 @@ namespace GeekBurger.LabelLoader
 {
     class Program
     {
-        private string DirectoryName { get; }
-        private List<string> Extensoes { get; }
-        private FileSystemWatcher Watcher { get; set; }
         private IConfiguration Config { get; set; }
-        private string _urlBase { get; }
-        private ILoggerFactory LoggerFactory { get; set; }
+        private ILogger<Program> Logger { get; set; }
+        private ILerDiretorio LerDiretorio { get; }
         static void Main(string[] args)
         {
             Console.WriteLine("LabelLoader 1.0.0");
             Program p = new Program();
             p.Run();
-            p.ProcessarArquivosParados();
             Console.ReadKey();
         }
 
@@ -37,14 +36,14 @@ namespace GeekBurger.LabelLoader
             ConfigureServices(serviceCollection);
 
             ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
-            ILogger<Program> logger = serviceProvider.GetService< ILoggerFactory>().CreateLogger<Program>();
+            Logger = serviceProvider.GetService< ILoggerFactory>().CreateLogger<Program>();
+            LabelImagesOptions labelImages = serviceProvider.GetService<IOptions<LabelImagesOptions>>().Value;
 
-            DirectoryName = Config.GetSection("LabelImagens:Diretorio").Value;
-            Extensoes = Config.GetSection("LabelImagens:Extensoes").Get<List<string>>();
-            _urlBase = Config.GetSection("LabelImagens:UrlBase").Value;
-            logger.LogInformation($"Diretório para imagens: {DirectoryName}");
-            logger.LogInformation($"Extensoes das imagens:  {string.Join(",",Extensoes)}");
-            if (!Directory.Exists(DirectoryName)) Directory.CreateDirectory(DirectoryName);
+            Logger.LogInformation($"Diretório para imagens: {labelImages.Diretorio}");
+            Logger.LogInformation($"Extensoes das imagens:  {string.Join(",", labelImages.Extensoes)}");
+            Logger.LogInformation($"Serviço de cadastro:    {string.Join(",", labelImages.UrlBase)}");
+            if (!Directory.Exists(labelImages.Diretorio)) Directory.CreateDirectory(labelImages.Diretorio);
+            LerDiretorio = serviceProvider.GetService<ILerDiretorio>();
         }
 
         private void Configure()
@@ -61,87 +60,15 @@ namespace GeekBurger.LabelLoader
                 .AddDebug()
                 .AddFile(@"c:\temp\Log\Log-{Date}.log"));
             services.AddLogging();
+            services.AddOptions();
+            services.Configure<LabelImagesOptions>(Config.GetSection("LabelImagesOptions"));
+            services.AddTransient<ILerDiretorio, LerDiretorio>();
+            services.AddTransient<IEnviaParaApi, EnviaParaApi>();
         }
 
-
-        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         public void Run()
         {
-            Watcher = new FileSystemWatcher
-            {
-                Path = DirectoryName,
-                Filter = "*.*",
-                NotifyFilter = NotifyFilters.LastAccess
-                                 | NotifyFilters.LastWrite
-                                 | NotifyFilters.FileName
-                                 | NotifyFilters.DirectoryName
-            };
-            Watcher.Created += OnChanged;
-            Watcher.EnableRaisingEvents = true;
+            LerDiretorio.Run();
         }
-
-        public void ProcessarArquivosParados()
-        {
-            string[] Files = Directory.GetFiles(DirectoryName);
-            string temp = "";
-            foreach (var item in Files)
-            {
-                temp = $@"C:\temp\{Path.GetFileName(item)}";
-                File.Move(item, temp);
-                File.Move(temp, item);
-            }
-        }
-
-        private async void OnChanged(object sender, FileSystemEventArgs e)
-        {
-            if (!Extensoes.Contains(Path.GetExtension(e.Name).ToLower().Replace(".", ""))) return;
-
-
-            await EnviarParaApi(new FileInfo(e.FullPath));
-
-            ILogger<Program> logger = LoggerFactory.CreateLogger<Program>();
-            logger.LogInformation($"Arquivo: {e.Name}, FullPath: {e.FullPath}, ChangeType: {e.ChangeType}");
-        }
-
-        private Uri Url(string url)
-        {
-            var endpoint = new Uri(new Uri(_urlBase), url);
-            return endpoint;
-        }
-
-        private async Task<bool> EnviarParaApi(FileInfo arquivo)
-        {
-            try
-            {
-                var arquivoConvertido = File.ReadAllBytes(arquivo.FullName);
-                AddLabelImage imagem = new AddLabelImage
-                {
-                    ItemName = arquivo.Name,
-                    File = Convert.ToBase64String(arquivoConvertido)
-                };
-
-               
-                using (var client = new HttpClient())
-                {
-                    var resposta = await client.PostAsJsonAsync(Url("api/Ingredient"), imagem);
-                    if (resposta.IsSuccessStatusCode)
-                    {
-
-                        return true;
-
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-
-                throw ex;
-            }
-        }
-
     }
 }
