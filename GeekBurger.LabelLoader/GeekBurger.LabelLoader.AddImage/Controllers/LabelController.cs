@@ -16,6 +16,7 @@ namespace GeekBurger.LabelLoader.AddImage.Controllers
         public IActionResult AddLabel(AddLabelImage label)
         {
             return Ok();
-        }
+        }
+
     }
 }
