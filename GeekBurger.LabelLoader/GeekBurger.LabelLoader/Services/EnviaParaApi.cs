@@ -64,7 +64,7 @@ namespace GeekBurger.LabelLoader.Services
             catch (Exception ex)
             {
                 Logger.LogError($"Erro ao enviar o arquivo [{arquivo.FullName}]: {ex.ToString()}");
-                throw ex;
+                throw;
             }
         }
 
