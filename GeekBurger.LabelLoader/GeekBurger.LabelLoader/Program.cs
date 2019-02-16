@@ -97,7 +97,7 @@ namespace GeekBurger.LabelLoader
                
                 using (var client = new HttpClient())
                 {
-                    var resposta = await client.PostAsJsonAsync(Url("api/Ingredient").ToString(), imagem);
+                    var resposta = await client.PostAsJsonAsync(Url("api/Ingredient"), imagem);
                     if (resposta.IsSuccessStatusCode)
                     {
 
