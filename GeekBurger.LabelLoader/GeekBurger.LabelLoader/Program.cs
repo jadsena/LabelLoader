@@ -1,5 +1,6 @@
 ﻿using GeekBurger.LabelLoader.Contract;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace GeekBurger.LabelLoader
         private string DirectoryName { get; }
         private List<string> Extensoes { get; }
         private FileSystemWatcher Watcher { get; set; }
-        private IConfiguration Config { get; }
+        private IConfiguration Config { get; set; }
         private string _urlBase { get; }
         private ILoggerFactory LoggerFactory { get; set; }
         static void Main(string[] args)
@@ -30,25 +31,38 @@ namespace GeekBurger.LabelLoader
 
         public Program()
         {
-            Config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
+            Configure();
+            
+            ServiceCollection serviceCollection = new ServiceCollection();
+            ConfigureServices(serviceCollection);
 
-            LoggerFactory = new LoggerFactory()
-                .AddConsole()
-                .AddDebug()
-                .AddFile(@"c:\temp\Log\Log-{Date}.log");
-            ILogger logger = LoggerFactory.CreateLogger<Program>();
+            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+            ILogger<Program> logger = serviceProvider.GetService< ILoggerFactory>().CreateLogger<Program>();
 
             DirectoryName = Config.GetSection("LabelImagens:Diretorio").Value;
             Extensoes = Config.GetSection("LabelImagens:Extensoes").Get<List<string>>();
             _urlBase = Config.GetSection("LabelImagens:UrlBase").Value;
-            Console.WriteLine($"Diretório para imagens: {DirectoryName}");
-            Console.WriteLine($"Extensoes das imagens:  {string.Join(",", Extensoes)}");
             logger.LogInformation($"Diretório para imagens: {DirectoryName}");
             logger.LogInformation($"Extensoes das imagens:  {string.Join(",",Extensoes)}");
             if (!Directory.Exists(DirectoryName)) Directory.CreateDirectory(DirectoryName);
         }
+
+        private void Configure()
+        {
+            Config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", true, true)
+                .Build();
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddSingleton<ILoggerFactory>( new LoggerFactory()
+                .AddConsole()
+                .AddDebug()
+                .AddFile(@"c:\temp\Log\Log-{Date}.log"));
+            services.AddLogging();
+        }
+
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         public void Run()
@@ -85,8 +99,6 @@ namespace GeekBurger.LabelLoader
 
             await EnviarParaApi(new FileInfo(e.FullPath));
 
-            Console.WriteLine($"Arquivo: {e.Name}, FullPath: {e.FullPath}, ChangeType: {e.ChangeType}");
-            if (!Extensoes.Contains(Path.GetExtension(e.Name).ToLower().Replace(".",""))) return;
             ILogger<Program> logger = LoggerFactory.CreateLogger<Program>();
             logger.LogInformation($"Arquivo: {e.Name}, FullPath: {e.FullPath}, ChangeType: {e.ChangeType}");
         }
