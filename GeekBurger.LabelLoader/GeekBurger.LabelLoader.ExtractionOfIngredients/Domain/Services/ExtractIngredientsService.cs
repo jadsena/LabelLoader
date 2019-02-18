@@ -1,4 +1,5 @@
-﻿using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
+﻿using GeekBurger.LabelLoader.ExtractionOfIngredients.Base;
+using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -25,7 +26,11 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
             try
             {
                 byte[] image = Convert.FromBase64String(imageBase64);
-
+                var formato =  Helper.GetImageFormat(image);
+                if(formato == ImageFormat.unknown || image.Length == 0)
+                {
+                    return new List<string>() { "Pilantrinha :(" };
+                }
                 var result = await _ocrService.CognitiveVisionOCR(image);
                 result = result.Replace("Ingredientes", "", StringComparison.OrdinalIgnoreCase);                
 
