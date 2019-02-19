@@ -50,8 +50,8 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Falha ao extrair ingredientes - {ex.Message}");
-                throw new Exception("Falha ao extrair ingredientes");
+                _logger.LogError($"Falha ao extrair ingredientes - {ex.ToString()}");
+                throw new Exception("Falha ao extrair ingredientes",ex);
             }
         }
     }

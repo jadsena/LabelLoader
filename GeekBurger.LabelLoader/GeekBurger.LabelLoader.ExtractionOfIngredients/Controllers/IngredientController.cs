@@ -56,10 +56,12 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Falha no processo de extração de ingredientes {ex.Message}");
+                _logger.LogError($"Falha no processo de extração de ingredientes {ex.ToString()}");
                 return NotFound();
             }           
         }
+
+        
 
         private bool ValidFile(string imageBase64)
         {

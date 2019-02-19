@@ -84,10 +84,10 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
 
                 return result;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _logger.LogError("Falha no OCR");
-                throw new Exception("Falha no OCR");
+                _logger.LogError($"Falha no OCR: { ex.ToString()}");
+                throw new Exception("Falha no OCR",ex);
             }
         }
     }
