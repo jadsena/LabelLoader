@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.AzureAppServices;
 using Serilog;
 using Serilog.Configuration;
 using Serilog.Settings.Configuration;
@@ -29,7 +30,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients
         {
             services.AddScoped<IExtractIngredientsService, ExtractIngredientsService>();
             services.AddScoped<ISendIngredientsService, SendIngredientsService>();
-            services.AddScoped<IOCRService, OCRService>();          
+            services.AddScoped<IOCRService, OCRService>();
 
             services.AddSwaggerGen(c =>
              {
@@ -58,6 +59,11 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients
             });
 
             loggerFactory.AddSerilog();
+            loggerFactory.AddAzureWebAppDiagnostics(
+                new AzureAppServicesDiagnosticsSettings
+                {
+                    OutputTemplate = "{ Timestamp:yyyy - MM - dd HH:mm:ss.fff zzz } [{ Level }] { Message} { NewLine} { Exception} "
+                });
 
             var option = new RewriteOptions();
             option.AddRedirect("^$", "swagger");
