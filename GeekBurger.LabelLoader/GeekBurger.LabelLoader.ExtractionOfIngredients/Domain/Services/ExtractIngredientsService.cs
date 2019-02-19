@@ -29,13 +29,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
             try
             {
                 byte[] image = Convert.FromBase64String(imageBase64);
-                var formato =  Helper.GetImageFormat(image);
-
-                if (formato == ImageFormat.unknown || image.Length == 0)
-                {
-                    return new List<string>() { "Pilantrinha :(" };
-                }
-
+              
                 _logger.Information("Passou pela validação");
 
                 var result = await _ocrService.CognitiveVisionOCR(image);
@@ -48,7 +42,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
             }
             catch (Exception ex)
             {
-                _logger.Error($"Falha ao extrair ingredientes - {ex.message}");
+                _logger.Error($"Falha ao extrair ingredientes - {ex.Message}");
                 throw new Exception("Falha ao extrair ingredientes");
             }
         }

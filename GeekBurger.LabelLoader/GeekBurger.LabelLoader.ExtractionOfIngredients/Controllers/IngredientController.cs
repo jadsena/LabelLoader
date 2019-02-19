@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GeekBurger.LabelLoader.Contract;
+using GeekBurger.LabelLoader.ExtractionOfIngredients.Base;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -35,22 +37,39 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
                 _logger.Information($"Iniciando extração de ingredientes item {addLabelImage.ItemName}," +
                     $" imagem {addLabelImage.ItemName }");
 
-                LabelImageAdded labelImageAdded = new LabelImageAdded(){
-                    ItemName = addLabelImage.ItemName,
-                    Ingredients = await _extractIngredientsService.GetIngredients(addLabelImage.File)            
-                };
+                if (!ValidFile(addLabelImage.File))
+                    return NotFound(":(");
 
-                _sendIngredientsService.SendIngredients(labelImageAdded);
+                    LabelImageAdded labelImageAdded = new LabelImageAdded()
+                    {
+                        ItemName = addLabelImage.ItemName,
+                        Ingredients = await _extractIngredientsService.GetIngredients(addLabelImage.File)
+                    };
 
-                _logger.Information("Extração finalizada");
+                    _sendIngredientsService.SendIngredients(labelImageAdded);
 
-                return Ok();
+                    _logger.Information("Extração finalizada");
+
+                    return Ok();
+               
             }
             catch (Exception ex)
             {
                 _logger.Error($"Falha no processo de extração de ingredientes {ex.Message}");
                 return NotFound();
             }           
+        }
+
+        private bool ValidFile(string imageBase64)
+        {
+            byte[] image = Convert.FromBase64String(imageBase64);
+            var formato = Helper.GetImageFormat(image);
+
+            if (formato == ImageFormat.unknown || image.Length == 0)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
