@@ -2,6 +2,7 @@
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Serilog;
 using System;
@@ -16,9 +17,9 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
     public class ExtractIngredientsService : IExtractIngredientsService
     {
         private readonly IOCRService _ocrService;
-        private readonly ILogger _logger;
+        private readonly ILogger<ExtractIngredientsService> _logger;
 
-        public ExtractIngredientsService(IOCRService ocrService, ILogger logger)
+        public ExtractIngredientsService(IOCRService ocrService, ILogger<ExtractIngredientsService> logger)
         {
             _ocrService = ocrService;
             _logger = logger;
@@ -30,19 +31,26 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
             {
                 byte[] image = Convert.FromBase64String(imageBase64);
               
-                _logger.Information("Passou pela validação");
+                _logger.LogInformation("Passou pela validação");
 
                 var result = await _ocrService.CognitiveVisionOCR(image);
 
-                _logger.Information("Passou pelo OCR");
+                _logger.LogInformation("Passou pelo OCR");
 
+                result = result.Replace("Ingredientes:", "", StringComparison.OrdinalIgnoreCase);
                 result = result.Replace("Ingredientes", "", StringComparison.OrdinalIgnoreCase);                
 
-                return result.Split(",").ToList();
+                var ingredients = result.Split(",").ToList();
+
+                ingredients.ForEach( x => {
+                    _logger.LogInformation($"{x}");
+                });
+
+                return ingredients;
             }
             catch (Exception ex)
             {
-                _logger.Error($"Falha ao extrair ingredientes - {ex.Message}");
+                _logger.LogError($"Falha ao extrair ingredientes - {ex.Message}");
                 throw new Exception("Falha ao extrair ingredientes");
             }
         }

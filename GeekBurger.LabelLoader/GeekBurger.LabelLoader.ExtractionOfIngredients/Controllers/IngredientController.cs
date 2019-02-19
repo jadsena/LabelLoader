@@ -5,6 +5,7 @@ using GeekBurger.LabelLoader.Contract;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Base;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
@@ -15,9 +16,9 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
     {
         private readonly IExtractIngredientsService _extractIngredientsService;
         private readonly ISendIngredientsService _sendIngredientsService;
-        private readonly ILogger _logger;
+        private readonly ILogger<IngredientController> _logger;
 
-        public IngredientController(IExtractIngredientsService extractIngredients, ISendIngredientsService sendIngredients, ILogger logger)
+        public IngredientController(IExtractIngredientsService extractIngredients, ISendIngredientsService sendIngredients, ILogger<IngredientController> logger)
         {
             _extractIngredientsService = extractIngredients;
             _sendIngredientsService = sendIngredients;
@@ -34,7 +35,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
         {
             try
             {
-                _logger.Information($"Iniciando extração de ingredientes item {addLabelImage.ItemName}," +
+                _logger.LogInformation($"Iniciando extração de ingredientes item {addLabelImage.ItemName}," +
                     $" imagem {addLabelImage.ItemName }");
 
                 if (!ValidFile(addLabelImage.File))
@@ -48,14 +49,14 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
 
                     _sendIngredientsService.SendIngredients(labelImageAdded);
 
-                    _logger.Information("Extração finalizada");
+                    _logger.LogInformation("Extração finalizada");
 
                     return Ok();
                
             }
             catch (Exception ex)
             {
-                _logger.Error($"Falha no processo de extração de ingredientes {ex.Message}");
+                _logger.LogError($"Falha no processo de extração de ingredientes {ex.Message}");
                 return NotFound();
             }           
         }
