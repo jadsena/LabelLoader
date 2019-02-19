@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using GeekBurger.LabelLoader.Contract;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
 {
@@ -12,11 +13,13 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
     {
         private readonly IExtractIngredientsService _extractIngredientsService;
         private readonly ISendIngredientsService _sendIngredientsService;
+        private readonly ILogger _logger;
 
-        public IngredientController(IExtractIngredientsService extractIngredients, ISendIngredientsService sendIngredients)
+        public IngredientController(IExtractIngredientsService extractIngredients, ISendIngredientsService sendIngredients, ILogger logger)
         {
             _extractIngredientsService = extractIngredients;
             _sendIngredientsService = sendIngredients;
+            _logger = logger;
         }
 
        /// <summary>
@@ -29,6 +32,9 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
         {
             try
             {
+                _logger.Information($"Iniciando extração de ingredientes item {addLabelImage.ItemName}," +
+                    $" imagem {addLabelImage.ItemName }");
+
                 LabelImageAdded labelImageAdded = new LabelImageAdded(){
                     ItemName = addLabelImage.ItemName,
                     Ingredients = await _extractIngredientsService.GetIngredients(addLabelImage.File)            
@@ -36,10 +42,13 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers
 
                 _sendIngredientsService.SendIngredients(labelImageAdded);
 
+                _logger.Information("Extração finalizada");
+
                 return Ok();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.Error($"Falha no processo de extração de ingredientes {ex.Message}");
                 return NotFound();
             }           
         }
