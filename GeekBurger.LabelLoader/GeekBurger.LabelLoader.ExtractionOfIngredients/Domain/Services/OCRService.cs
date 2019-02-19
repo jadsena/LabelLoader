@@ -1,7 +1,9 @@
 ﻿using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,10 +14,12 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
     public class OCRService : IOCRService
     {
         readonly private IConfiguration _configuration;
+        private readonly ILogger<OCRService> _logger;
 
-        public OCRService(IConfiguration configuration)
+        public OCRService(IConfiguration configuration, ILogger<OCRService> logger)
         {
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<string> CognitiveVisionOCR(byte[] image)
@@ -27,9 +31,13 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
                 HttpClient client = new HttpClient();
                 HttpResponseMessage response;
 
+                _logger.LogInformation("Inicia a request");
+               
                 // Request headers.
                 client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _configuration.GetSection("Cognitive:SubscriptionKey").Value);
 
+
+                _logger.LogInformation("Prepara o content");
                 // Add the byte array as an octet stream to the request body.
                 using (ByteArrayContent content = new ByteArrayContent(image))
                 {
@@ -40,11 +48,14 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
                     response = await client.PostAsync($"{_configuration.GetSection("Cognitive:UriBase").Value}?{_configuration.GetSection("Cognitive:UriParameters").Value}", content);
                 }
 
+                _logger.LogInformation("Acessa o serviço de OCR");
                 // Asynchronously get the JSON response.
                 string contentString = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                 {
+                    _logger.LogInformation("Retorno com sucesso");
+
                     // The JSON response mapped into respective view model.  
                     responeData = JsonConvert.DeserializeObject<ImageInfoViewModel>(contentString,
                             new JsonSerializerSettings
@@ -56,6 +67,8 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
                                 }
                             }
                         );
+
+                    _logger.LogInformation("Retorno deserializado");
 
                     var linesCount = responeData.regions[0].lines.Count;
                     for (int i = 0; i < linesCount; i++)
@@ -71,9 +84,10 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services
 
                 return result;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new Exception("Falha no OCR");
+                _logger.LogError($"Falha no OCR: { ex.ToString()}");
+                throw new Exception("Falha no OCR",ex);
             }
         }
     }
