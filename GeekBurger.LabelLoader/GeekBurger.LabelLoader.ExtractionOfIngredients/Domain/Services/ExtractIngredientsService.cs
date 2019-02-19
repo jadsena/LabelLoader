@@ -1,12 +1,7 @@
 ﻿using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
-using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services

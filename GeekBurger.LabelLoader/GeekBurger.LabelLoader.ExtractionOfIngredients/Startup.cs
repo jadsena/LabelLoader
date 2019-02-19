@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
+﻿using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Serilog;
+using Serilog.Configuration;
+using Serilog.Settings.Configuration;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace GeekBurger.LabelLoader.ExtractionOfIngredients
@@ -21,6 +18,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients
     {
         public Startup(IConfiguration configuration)
         {
+            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
             Configuration = configuration;
         }
 
@@ -33,6 +31,11 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients
             services.AddScoped<ISendIngredientsService, SendIngredientsService>();
             services.AddScoped<IOCRService, OCRService>();
 
+            //services.AddSingleton<ILoggerFactory>( new LoggerFactory()
+            //    .AddConsole()
+            //    .AddDebug()
+            //    .AddFile(@"c:\temp\Log\Log-{Date}-API.log"));
+
             services.AddSwaggerGen(c =>
              {
                  c.SwaggerDoc("v1", new Info { Title = "Label Loader", Version = "v1" });
@@ -42,7 +45,7 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -58,6 +61,8 @@ namespace GeekBurger.LabelLoader.ExtractionOfIngredients
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Label Loader V1");
             });
+
+            loggerFactory.AddSerilog();
 
             var option = new RewriteOptions();
             option.AddRedirect("^$", "swagger");

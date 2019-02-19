@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using GeekBurger.LabelLoader.Contract;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
-using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GeekBurger.LabelLoader.ExtractionOfIngredients.Controllers

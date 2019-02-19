@@ -1,13 +1,11 @@
 ﻿using GeekBurger.LabelLoader.Contract;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Base;
 using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Interfaces;
-using GeekBurger.LabelLoader.ExtractionOfIngredients.Domain.Models;
 using Microsoft.Azure.Management.ServiceBus.Fluent;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
