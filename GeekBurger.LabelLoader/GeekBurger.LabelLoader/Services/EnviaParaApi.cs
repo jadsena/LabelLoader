@@ -3,23 +3,22 @@ using GeekBurger.LabelLoader.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace GeekBurger.LabelLoader.Services
 {
     public class EnviaParaApi : IEnviaParaApi
     {
-        public LabelImagesOptions LabelImagesOptions { get; }
-        public ILogger Logger { get; }
-
-        public EnviaParaApi(ILogger<EnviaParaApi> logger, IOptions<LabelImagesOptions> options)
+        private LabelImagesOptions LabelImagesOptions { get; }
+        private ILogger Logger { get; }
+        private IHttpClientFactory HttpClientFactory { get; }
+        public EnviaParaApi(ILogger<EnviaParaApi> logger, IOptions<LabelImagesOptions> options, IHttpClientFactory httpClientFactory)
         {
             Logger = logger;
             LabelImagesOptions = options.Value;
+            HttpClientFactory = httpClientFactory;
         }
 
         public Task<bool> EnviarAsync(FileInfo arquivo)
@@ -44,19 +43,20 @@ namespace GeekBurger.LabelLoader.Services
                 };
 
 
-                using (var client = new HttpClient())
+                using (var client = HttpClientFactory.CreateClient("ApiAzure"))
                 {
                     Logger.LogInformation($"Enviando arquivo para: {Url("api/Ingredient")}");
                     System.Threading.CancellationToken cancellationToken = new System.Threading.CancellationToken();
-                    var resposta = await client.PostAsJsonAsync(Url("api/Ingredient"), imagem, cancellationToken);
+                    var resposta = await client.PostAsJsonAsync("api/Ingredient", imagem, cancellationToken);
                     if (resposta.IsSuccessStatusCode)
                     {
-                        Logger.LogInformation($"Arquivo [{arquivo.FullName}] enviado com sucesso para: {Url("api/Ingredient")}");
+                        Logger.LogInformation($"Arquivo [{arquivo.FullName}] enviado com sucesso para: {Url("api/Ingredient")}. StatusCode {(int)resposta.StatusCode} - {resposta.StatusCode}");
                         return true;
 
                     }
                     else
                     {
+                        Logger.LogError($"Arquivo [{arquivo.FullName}] não enviado para: {Url("api/Ingredient")}. Error: {Convert.ToInt32(resposta.StatusCode)} - {resposta.StatusCode}");
                         return false;
                     }
                 }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -64,6 +65,16 @@ namespace GeekBurger.LabelLoader
             services.Configure<LabelImagesOptions>(Config.GetSection("LabelImagesOptions"));
             services.AddTransient<ILerDiretorio, LerDiretorio>();
             services.AddTransient<IEnviaParaApi, EnviaParaApi>();
+            services.AddHttpClient("ApiAzure", client => 
+            {
+                client.BaseAddress = new Uri("http://geekburgerlabelloaderextractionofingredients20190216021917.azurewebsites.net/");
+            })
+            .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
+            {
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(5),
+                TimeSpan.FromSeconds(10)
+            }));
         }
 
         public void Run()

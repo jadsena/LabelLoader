@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Permissions;
 using System.Text;
+using System.Threading;
 
 namespace GeekBurger.LabelLoader.Services
 {
@@ -47,6 +48,7 @@ namespace GeekBurger.LabelLoader.Services
             foreach (var item in Files)
             {
                 temp = $@"C:\temp\{Path.GetFileName(item)}";
+                if (File.Exists(temp)) File.Delete(temp);
                 File.Move(item, temp);
                 File.Move(temp, item);
             }
@@ -56,6 +58,12 @@ namespace GeekBurger.LabelLoader.Services
         {
             if (!LabelImagesOptions.Extensoes.Contains(Path.GetExtension(e.Name).ToLower().Replace(".", ""))) return;
             Logger.LogInformation($"Arquivo: {e.Name}, FullPath: {e.FullPath}, ChangeType: {e.ChangeType}");
+            FileAttributes fa;
+            
+            do
+            {
+                fa = (File.Exists(e.FullPath) ? File.GetAttributes(e.FullPath) : FileAttributes.ReadOnly);
+            } while (fa == FileAttributes.ReadOnly);
             try
             {
                 await EnviaParaApi.EnviarAsync(new FileInfo(e.FullPath));
