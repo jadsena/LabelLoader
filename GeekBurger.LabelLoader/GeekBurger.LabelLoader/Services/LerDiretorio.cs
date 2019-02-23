@@ -7,6 +7,7 @@ using System.IO;
 using System.Security.Permissions;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GeekBurger.LabelLoader.Services
 {
@@ -66,7 +67,8 @@ namespace GeekBurger.LabelLoader.Services
             } while (fa == FileAttributes.ReadOnly);
             try
             {
-                await EnviaParaApi.EnviarAsync(new FileInfo(e.FullPath));
+                bool bRet = await EnviaParaApi.EnviarAsync(new FileInfo(e.FullPath));
+                if (bRet) File.Move(e.FullPath, Path.Combine(LabelImagesOptions.Processados, e.Name));
             }catch(Exception ex)
             {
                 Logger.LogError(ex.ToString());

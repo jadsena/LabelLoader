@@ -40,10 +40,10 @@ namespace GeekBurger.LabelLoader
             Logger = serviceProvider.GetService< ILoggerFactory>().CreateLogger<Program>();
             LabelImagesOptions labelImages = serviceProvider.GetService<IOptions<LabelImagesOptions>>().Value;
 
-            Logger.LogInformation($"Diretório para imagens: {labelImages.Diretorio}");
-            Logger.LogInformation($"Extensoes das imagens:  {string.Join(",", labelImages.Extensoes)}");
-            Logger.LogInformation($"Serviço de cadastro:    {string.Join(",", labelImages.UrlBase)}");
+            Logger.LogInformation("Configurações:");
+            Logger.LogInformation(labelImages.ToString());
             if (!Directory.Exists(labelImages.Diretorio)) Directory.CreateDirectory(labelImages.Diretorio);
+            if (!Directory.Exists(labelImages.Processados)) Directory.CreateDirectory(labelImages.Processados);
             LerDiretorio = serviceProvider.GetService<ILerDiretorio>();
         }
 
@@ -65,9 +65,10 @@ namespace GeekBurger.LabelLoader
             services.Configure<LabelImagesOptions>(Config.GetSection("LabelImagesOptions"));
             services.AddTransient<ILerDiretorio, LerDiretorio>();
             services.AddTransient<IEnviaParaApi, EnviaParaApi>();
+            
             services.AddHttpClient("ApiAzure", client => 
             {
-                client.BaseAddress = new Uri("http://geekburgerlabelloaderextractionofingredients20190216021917.azurewebsites.net/");
+                client.BaseAddress = new Uri(Config.GetValue<string>("LabelImagesOptions:UrlBase"));
             })
             .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
             {
