@@ -1,4 +1,5 @@
-﻿using GeekBurger.LabelLoader.Options;
+﻿using GeekBurger.LabelLoader.Helper;
+using GeekBurger.LabelLoader.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -13,10 +14,10 @@ namespace GeekBurger.LabelLoader.Services
 {
     public class LerDiretorio : ILerDiretorio
     {
-        ILogger<LerDiretorio> Logger { get; }
-        LabelImagesOptions LabelImagesOptions { get; }
-        FileSystemWatcher Watcher { get; set; }
-        IEnviaParaApi EnviaParaApi { get; }
+        private ILogger<LerDiretorio> Logger { get; }
+        private LabelImagesOptions LabelImagesOptions { get; }
+        private FileSystemWatcher Watcher { get; set; }
+        private IEnviaParaApi EnviaParaApi { get; }
         public LerDiretorio(IEnviaParaApi enviaParaApi, ILogger<LerDiretorio> logger, IOptions<LabelImagesOptions> options)
         {
             Logger = logger;
@@ -59,19 +60,21 @@ namespace GeekBurger.LabelLoader.Services
         {
             if (!LabelImagesOptions.Extensoes.Contains(Path.GetExtension(e.Name).ToLower().Replace(".", ""))) return;
             Logger.LogInformation($"Arquivo: {e.Name}, FullPath: {e.FullPath}, ChangeType: {e.ChangeType}");
-            FileAttributes fa;
-            
-            do
-            {
-                fa = (File.Exists(e.FullPath) ? File.GetAttributes(e.FullPath) : FileAttributes.ReadOnly);
-            } while (fa == FileAttributes.ReadOnly);
+            MoveArquivoProcessado moveArquivoProcessado = null;
             try
             {
                 bool bRet = await EnviaParaApi.EnviarAsync(new FileInfo(e.FullPath));
-                if (bRet) File.Move(e.FullPath, Path.Combine(LabelImagesOptions.Processados, e.Name));
-            }catch(Exception ex)
+                if(bRet)
+                    moveArquivoProcessado = new MoveArquivoProcessado(e.FullPath, LabelImagesOptions);
+                else
+                    moveArquivoProcessado = new MoveArquivoProcessado(e.FullPath, LabelImagesOptions, new Exception("Falha ao enviar o arquivo."));
+                moveArquivoProcessado.Mover();
+            }
+            catch(Exception ex)
             {
                 Logger.LogError(ex.ToString());
+                moveArquivoProcessado = new MoveArquivoProcessado(e.FullPath, LabelImagesOptions, ex);
+                moveArquivoProcessado.Mover();
             }
         }
     }

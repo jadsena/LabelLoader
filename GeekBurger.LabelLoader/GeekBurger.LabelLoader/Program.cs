@@ -1,5 +1,4 @@
-﻿using GeekBurger.LabelLoader.Contract;
-using GeekBurger.LabelLoader.Options;
+﻿using GeekBurger.LabelLoader.Options;
 using GeekBurger.LabelLoader.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,11 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
-using System.Security.Permissions;
-using System.Threading.Tasks;
 
 
 namespace GeekBurger.LabelLoader
@@ -21,6 +16,7 @@ namespace GeekBurger.LabelLoader
         private IConfiguration Config { get; set; }
         private ILogger<Program> Logger { get; set; }
         private ILerDiretorio LerDiretorio { get; }
+        private ServiceCollection ServiceCollection { get; }
         static void Main(string[] args)
         {
             Console.WriteLine("LabelLoader 1.0.0");
@@ -33,10 +29,10 @@ namespace GeekBurger.LabelLoader
         {
             Configure();
             
-            ServiceCollection serviceCollection = new ServiceCollection();
-            ConfigureServices(serviceCollection);
+            ServiceCollection = new ServiceCollection();
+            ConfigureServices(ServiceCollection);
 
-            ServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
+            ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
             Logger = serviceProvider.GetService< ILoggerFactory>().CreateLogger<Program>();
             LabelImagesOptions labelImages = serviceProvider.GetService<IOptions<LabelImagesOptions>>().Value;
 
@@ -50,17 +46,19 @@ namespace GeekBurger.LabelLoader
         private void Configure()
         {
             Config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", true, true)
+                .AddJsonFile("appsettings.json", false, true)
                 .Build();
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILoggerFactory>( new LoggerFactory()
-                .AddConsole()
-                .AddDebug()
-                .AddFile(@"c:\temp\Log\Log-{Date}.log"));
-            services.AddLogging();
+            services.AddLogging((loggingBuilder) =>
+            {
+                loggingBuilder.AddConfiguration(Config.GetSection("Logging"));
+                loggingBuilder.AddConsole();
+                loggingBuilder.AddDebug();
+                loggingBuilder.AddFile(@"c:\temp\Log\Log-{Date}.log");
+            });
             services.AddOptions();
             services.Configure<LabelImagesOptions>(Config.GetSection("LabelImagesOptions"));
             services.AddTransient<ILerDiretorio, LerDiretorio>();

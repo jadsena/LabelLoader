@@ -20,7 +20,20 @@ namespace GeekBurger.LabelLoader.Services
             LabelImagesOptions = options.Value;
             HttpClientFactory = httpClientFactory;
         }
-
+        /// <summary>
+        /// Enviar arquivo para API
+        /// </summary>
+        /// <param name="arquivo">Dados do arquivo que será enviado</param>
+        /// <returns>bool</returns>
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.IO.PathTooLongException"></exception>
+        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="System.IO.IOException"></exception>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
+        /// <exception cref="System.IO.FileNotFoundException"></exception>
+        /// <exception cref="System.NotSupportedException"></exception>
+        /// <exception cref="System.Security.SecurityException"></exception>
         public Task<bool> EnviarAsync(FileInfo arquivo)
         {
             return EnviarParaApi(arquivo);
@@ -30,7 +43,20 @@ namespace GeekBurger.LabelLoader.Services
             var endpoint = new Uri(new Uri(LabelImagesOptions.UrlBase), url);
             return endpoint;
         }
-
+        /// <summary>
+        /// Enviar arquivo para API
+        /// </summary>
+        /// <param name="arquivo">Dados do arquivo que será enviado</param>
+        /// <returns>bool</returns>
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="System.ArgumentNullException"></exception>
+        /// <exception cref="System.IO.PathTooLongException"></exception>
+        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <exception cref="System.IO.IOException"></exception>
+        /// <exception cref="System.UnauthorizedAccessException"></exception>
+        /// <exception cref="System.IO.FileNotFoundException"></exception>
+        /// <exception cref="System.NotSupportedException"></exception>
+        /// <exception cref="System.Security.SecurityException"></exception>
         private async Task<bool> EnviarParaApi(FileInfo arquivo)
         {
             try
